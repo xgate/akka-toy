@@ -1,30 +1,33 @@
 package reactive.bankaccount
 
-class BankAccount {
+import akka.actor.Actor
 
-  private var balance = 0
+class BankAccount extends Actor {
 
-  def deposit(amount: Int): Unit = this.synchronized {
-    if (amount > 0) balance = balance + amount
+  import BankAccount._
+
+  var balance = BigInt(0)
+
+  def receive = {
+    case Deposit(amount) =>
+      balance += amount
+      sender ! Done
+    case WithDraw(amount) if amount <= balance =>
+      balance -= amount
+      sender ! Done
+    case _ =>
+      sender ! Failed
+  }
+}
+
+object BankAccount {
+  case class Deposit(amount: BigInt) {
+    require(amount > 0)
+  }
+  case class WithDraw(amount: BigInt) {
+    require(amount > 0)
   }
 
-  def withDraw(amount: Int): Int = this.synchronized {
-    val b = balance
-    if (0 < amount && amount <= b) {
-      val newBalance = b - amount
-      balance = newBalance
-      newBalance
-    } else {
-      throw new Error("insufficient funds")
-    }
-  }
-
-  def transfer(from: BankAccount, to: BankAccount, amount: Int): Unit = {
-    from.synchronized {
-      to.synchronized {
-        from.withDraw(amount)
-        to.deposit(amount)
-      }
-    }
-  }
+  case object Done
+  case object Failed
 }
