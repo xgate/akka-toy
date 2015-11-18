@@ -13,7 +13,7 @@ object SimpleClusterApp {
   def startup(ports: Seq[String]): Unit = {
     ports foreach { port =>
       val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port)
-        .withFallback(ConfigFactory.load())
+        .withFallback(ConfigFactory.load().getConfig("cluster"))
       val system = ActorSystem("ClusterSystem", config)
       system.actorOf(Props[SimpleClusterListener], name = "cluster-listener")
     }

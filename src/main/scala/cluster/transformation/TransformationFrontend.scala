@@ -36,9 +36,28 @@ class TransformationFrontend extends Actor {
 object TransformationFrontend {
   def main (args: Array[String]): Unit = {
     val port = if (args.isEmpty) "0" else args(0)
-    val config = ConfigFactory.parseString(s"akka.remote.netty.tcp.port=$port")
-      .withFallback(ConfigFactory.parseString("akka.cluster.roles = [frontend]"))
-      .withFallback(ConfigFactory.load())
+    val config = ConfigFactory.parseString(
+      s"""
+         |akka {
+         |    actor {
+         |      provider = "akka.cluster.ClusterActorRefProvider"
+         |    }
+         |    remote {
+         |      log-remote-lifecycle-events = off
+         |      netty.tcp {
+         |        hostname = "127.0.0.1"
+         |        port = $port
+         |      }
+         |    }
+         |    cluster {
+         |      roles = ["frontend"]
+         |      seed-nodes = [
+         |        "akka.tcp://ClusterSystem@127.0.0.1:2551",
+         |        "akka.tcp://ClusterSystem@127.0.0.1:2552"]
+         |      auto-down-unreachable-after = 10s
+         |    }
+         |}
+       """.stripMargin).withFallback(ConfigFactory.load())
 
     val system = ActorSystem("ClusterSystem", config)
     val frontend = system.actorOf(Props[TransformationFrontend], name = "frontend")

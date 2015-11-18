@@ -9,6 +9,7 @@ libraryDependencies ++= {
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaVersion,
     "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
+    "com.typesafe.akka" %% "akka-contrib" % akkaVersion,
     "com.typesafe.akka" % "akka-persistence-experimental_2.11" % akkaVersion,
     "com.ning" % "async-http-client" % "1.7.19",
     "org.jsoup" % "jsoup" % "1.8.1"
